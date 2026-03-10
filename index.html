@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雲端庫存助手</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">📦 入出庫管理</h2>
+        
+        <div class="space-y-3 mb-6">
+            <input type="text" id="operator" placeholder="操作人員" class="w-full border p-2 rounded">
+            <select id="type" class="w-full border p-2 rounded bg-white">
+                <option value="入庫">📥 入庫</option>
+                <option value="出庫">📤 出庫</option>
+            </select>
+            <input type="text" id="reason" placeholder="原因 (例：採購、領用)" class="w-full border p-2 rounded">
+        </div>
+
+        <div id="reader" class="mb-4 overflow-hidden rounded-lg border border-dashed border-gray-400"></div>
+        
+        <div class="mt-4">
+            <h3 class="font-bold text-gray-700 mb-2">本次掃描清單：</h3>
+            <ul id="itemList" class="divide-y divide-gray-200 border rounded">
+                </ul>
+        </div>
+
+        <button onclick="submitData()" id="submitBtn" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+            確認提交至雲端
+        </button>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbz_9M9rlcqYuU-sECyEDmrB34VVbXnVW_IDAqYph6EiuG8cSWEo3iBXnb7t5hKzQ-66/exec"; // 👈 請換成你的 URL
+        let cart = [];
+
+        // 啟動掃描器
+        const html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 },
+            (decodedText) => {
+                addItem(decodedText);
+                // 掃描成功後震動提示 (部分手機支援)
+                if(navigator.vibrate) navigator.vibrate(100);
+            }
+        );
+
+        function addItem(id) {
+            // 這裡可以加入檢查商品名稱的邏輯 (doGet)
+            let item = cart.find(i => i.id === id);
+            if (item) {
+                item.quantity++;
+            } else {
+                cart.push({ id: id, name: "掃描品項", quantity: 1 });
+            }
+            renderList();
+        }
+
+        function renderList() {
+            const list = document.getElementById('itemList');
+            list.innerHTML = cart.map((item, index) => `
+                <li class="p-3 flex justify-between items-center">
+                    <span>${item.id} (x${item.quantity})</span>
+                    <button onclick="cart.splice(${index}, 1); renderList();" class="text-red-500 text-sm">刪除</button>
+                </li>
+            `).join('');
+        }
+
+        async function submitData() {
+            const operator = document.getElementById('operator').value;
+            if (!operator || cart.length === 0) return alert("請填寫人員並掃描至少一項商品");
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "提交中...";
+
+            const payload = {
+                orderId: "ORD-" + Date.now(),
+                operator: operator,
+                type: document.getElementById('type').value,
+                reason: document.getElementById('reason').value,
+                items: cart
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // 解決 GAS 跨網域問題
+                    body: JSON.stringify(payload)
+                });
+                alert("提交成功！");
+                cart = [];
+                renderList();
+            } catch (e) {
+                alert("提交失敗，請檢查網路");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "確認提交至雲端";
+            }
+        }
+    </script>
+</body>
+</html>
