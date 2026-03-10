@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>進出庫管理系統 v5 (相機優化版)</title>
+    <title>進出庫管理系統 v5.1 (穩定相容版)</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -155,7 +155,7 @@
                 alert("⚠️ 無法連線至資料庫，請確認網路或 URL 設定。");
             }
         }
-        fetchProducts(); // 網頁載入時自動執行
+        fetchProducts(); 
 
         function renderProductSelect() {
             const select = document.getElementById('productSelect');
@@ -168,14 +168,14 @@
             });
         }
 
-        // 🌟 強化的商品比對函數，防呆防錯
+        // 🌟 強化的商品比對函數
         function findProductInDB(scannedId) {
             const target = String(scannedId).trim();
             return productDatabase.find(p => {
                 const dbId = String(p.id).trim();
-                if (dbId === target) return true; // 完全相同
-                if (dbId.toUpperCase() === target.toUpperCase()) return true; // 忽略大小寫
-                if (dbId.replace(/^0+/, '') === target.replace(/^0+/, '')) return true; // 忽略開頭的 0
+                if (dbId === target) return true; 
+                if (dbId.toUpperCase() === target.toUpperCase()) return true; 
+                if (dbId.replace(/^0+/, '') === target.replace(/^0+/, '')) return true; 
                 return false;
             });
         }
@@ -210,19 +210,18 @@
                 readerDiv.classList.remove('hidden');
                 html5QrCode = new Html5Qrcode("reader");
                 
-                // 🌟 優化 1：掃描器本體設定 (拉高 fps，寬扁掃描框)
+                // 🌟 設定一：掃描器參數 (fps 15, 寬扁長方形框)
                 const scannerConfig = { 
                     fps: 15, 
                     qrbox: { width: 250, height: 120 }, 
                     aspectRatio: 1.0 
                 }; 
 
-                // 🌟 優化 2：向手機硬體請求最高解析度與連續對焦
+                // 🌟 設定二：相機硬體請求 (退回 720p 以確保相容性，拿掉 advanced 條件)
                 const cameraConstraints = {
                     facingMode: "environment",
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 },
-                    advanced: [{ focusMode: "continuous" }] 
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
                 };
 
                 try {
@@ -249,7 +248,8 @@
                     btn.innerText = "❌ 關閉相機";
                     isScanning = true;
                 } catch (err) {
-                    alert("無法啟動相機，請確認已授權瀏覽器使用相機。");
+                    alert("無法啟動相機，請確認已授權瀏覽器使用相機權限，且不要在 LINE 裡面直接開啟網頁。");
+                    console.error("相機錯誤:", err);
                     readerDiv.classList.add('hidden');
                 }
             } else {
