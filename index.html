@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>進出庫管理系統 v4</title>
+    <title>進出庫管理系統</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -14,7 +14,7 @@
         <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700">操作人員</label>
-                <select id="operator" class="w-full border p-2 rounded bg-white mt-1">
+                <select id="operator" class="w-full border p-2 rounded bg-white mt-1 focus:ring-2 focus:ring-blue-300">
                     <option value="">請選擇人員...</option>
                     <option value="Robin">Robin</option>
                     <option value="William">William</option>
@@ -23,14 +23,14 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">作業類型</label>
-                <select id="type" class="w-full border p-2 rounded bg-white mt-1">
+                <select id="type" class="w-full border p-2 rounded bg-white mt-1 focus:ring-2 focus:ring-blue-300">
                     <option value="入庫">📥 入庫</option>
                     <option value="出庫">📤 出庫</option>
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">原因</label>
-                <select id="reason" class="w-full border p-2 rounded bg-white mt-1"></select>
+                <select id="reason" class="w-full border p-2 rounded bg-white mt-1 focus:ring-2 focus:ring-blue-300"></select>
             </div>
         </div>
 
@@ -38,14 +38,14 @@
             <h3 class="text-sm font-bold text-blue-800 mb-3">錄入品項</h3>
             
             <div id="reader" class="hidden mb-3 overflow-hidden rounded-lg bg-black"></div>
-            <button id="scanBtn" onclick="toggleScanner()" class="w-full mb-3 bg-blue-100 text-blue-700 py-2 rounded border border-blue-300 font-medium shadow-sm">
+            <button id="scanBtn" onclick="toggleScanner()" class="w-full mb-3 bg-blue-100 text-blue-700 py-2 rounded border border-blue-300 font-medium shadow-sm active:bg-blue-200 transition">
                 📷 開啟相機掃碼
             </button>
 
             <div class="space-y-3">
                 <div>
                     <label class="text-xs text-gray-500">選擇商品 (掃描後自動帶出)</label>
-                    <select id="productSelect" onchange="syncIdFromSelect()" class="w-full border p-2 rounded bg-white mt-1">
+                    <select id="productSelect" onchange="syncIdFromSelect()" class="w-full border p-2 rounded bg-white mt-1 focus:ring-2 focus:ring-blue-300">
                         <option value="">-- 請選擇商品 --</option>
                     </select>
                 </div>
@@ -53,15 +53,15 @@
                 <div class="flex gap-2">
                     <div class="flex-1">
                         <label class="text-xs text-gray-500">商品編號</label>
-                        <input type="text" id="scanId" class="w-full border p-2 rounded font-mono bg-gray-50" readonly placeholder="掃描或選取">
+                        <input type="text" id="scanId" class="w-full border p-2 rounded font-mono bg-gray-50 text-gray-600" readonly placeholder="等待掃描或選取">
                     </div>
                     <div class="w-24">
                         <label class="text-xs text-gray-500">數量</label>
-                        <input type="number" id="scanQty" class="w-full border p-2 rounded" value="1" min="1">
+                        <input type="number" id="scanQty" class="w-full border p-2 rounded focus:ring-2 focus:ring-blue-300" value="1" min="1">
                     </div>
                 </div>
 
-                <button onclick="addCurrentItem()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow-md">
+                <button onclick="addCurrentItem()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow-md active:bg-blue-800 transition">
                     ＋ 新增至待提交清單
                 </button>
             </div>
@@ -77,7 +77,7 @@
             </ul>
         </div>
 
-        <button onclick="submitData()" id="submitBtn" class="w-full mt-6 bg-green-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-green-700 disabled:bg-gray-400 transition">
+        <button onclick="submitData()" id="submitBtn" class="w-full mt-6 bg-green-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-green-700 disabled:bg-gray-400 transition active:bg-green-800">
             確認提交至雲端
         </button>
     </div>
@@ -107,26 +107,26 @@
             </div>
             
             <div class="mt-6 flex gap-3">
-                <button onclick="closeAddModal()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded font-bold hover:bg-gray-300">取消</button>
-                <button onclick="submitNewProduct()" id="saveNewProdBtn" class="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow">儲存並建立</button>
+                <button onclick="closeAddModal()" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded font-bold hover:bg-gray-300 transition">取消</button>
+                <button onclick="submitNewProduct()" id="saveNewProdBtn" class="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow transition">儲存並建立</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ⚠️ 記得換成你的 Apps Script URL
-        const API_URL = "https://script.google.com/macros/s/AKfycbz_9M9rlcqYuU-sECyEDmrB34VVbXnVW_IDAqYph6EiuG8cSWEo3iBXnb7t5hKzQ-66/exec"; 
+        // 🔒 你的 Google Apps Script URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbz_9M9rlcqYuU-sECyEDmrB34VVbXnVW_IDAqYph6EiuG8cSWEo3iBXnb7t5hKzQ-66/exec";
         
         let cart = [];
         let productDatabase = [];
         let isScanning = false;
         let html5QrCode = null;
 
+        // --- A. 表單連動初始化 ---
         const reasonOptions = {
             "入庫": ["採購", "歸還", "借入", "調整"],
             "出庫": ["售出", "借出", "歸還", "調整"]
         };
-
         const typeSelect = document.getElementById('type');
         const reasonSelect = document.getElementById('reason');
 
@@ -143,17 +143,19 @@
         typeSelect.addEventListener('change', updateReasonOptions);
         updateReasonOptions(); 
 
-        // 重新封裝抓取商品的邏輯，方便後續重複呼叫
+        // --- B. 資料庫載入與比對邏輯 ---
         async function fetchProducts() {
             try {
                 const response = await fetch(API_URL);
                 productDatabase = await response.json();
                 renderProductSelect();
+                console.log("資料庫載入完成，共", productDatabase.length, "筆商品");
             } catch (e) {
                 console.error("無法同步商品清單", e);
+                alert("⚠️ 無法連線至資料庫，請確認網路或 URL 設定。");
             }
         }
-        fetchProducts();
+        fetchProducts(); // 網頁載入時自動執行
 
         function renderProductSelect() {
             const select = document.getElementById('productSelect');
@@ -166,6 +168,19 @@
             });
         }
 
+        // 🌟 強化的商品比對函數，防呆防錯
+        function findProductInDB(scannedId) {
+            const target = String(scannedId).trim();
+            return productDatabase.find(p => {
+                const dbId = String(p.id).trim();
+                if (dbId === target) return true; // 完全相同
+                if (dbId.toUpperCase() === target.toUpperCase()) return true; // 忽略大小寫
+                if (dbId.replace(/^0+/, '') === target.replace(/^0+/, '')) return true; // 忽略開頭的 0
+                return false;
+            });
+        }
+
+        // --- C. 相機與掃描邏輯 ---
         function playSuccessFeedback() {
             if (navigator.vibrate) navigator.vibrate(100);
             try {
@@ -186,34 +201,42 @@
             const readerDiv = document.getElementById('reader');
             const btn = document.getElementById('scanBtn');
             
+            if (productDatabase.length === 0) {
+                alert("⚠️ 尚未讀取到商品清單，請稍候或重新整理頁面。");
+                return;
+            }
+
             if (!isScanning) {
                 readerDiv.classList.remove('hidden');
                 html5QrCode = new Html5Qrcode("reader");
-                const config = { fps: 20, qrbox: { width: 250, height: 150 }, aspectRatio: 1.0 };
+                
+                // 恢復為較穩定的相機參數
+                const config = { fps: 10, qrbox: 250 }; 
 
                 try {
                     await html5QrCode.start(
                         { facingMode: "environment" }, config,
                         (decodedText) => {
                             playSuccessFeedback();
-                            document.getElementById('scanId').value = decodedText;
-                            toggleScanner(); // 先關閉相機
-
-                            // 🔍 檢查是否為未知商品
-                            const exists = productDatabase.find(p => p.id === decodedText);
+                            toggleScanner(); // 掃描成功後自動關閉相機
+                            
+                            const scannedId = String(decodedText).trim();
+                            document.getElementById('scanId').value = scannedId;
+                            
+                            const exists = findProductInDB(scannedId);
+                            
                             if (exists) {
-                                document.getElementById('productSelect').value = decodedText;
+                                document.getElementById('productSelect').value = exists.id;
                             } else {
-                                // 觸發新增商品 Modal
                                 document.getElementById('productSelect').value = "";
-                                openAddModal(decodedText);
+                                openAddModal(scannedId);
                             }
                         }
                     );
                     btn.innerText = "❌ 關閉相機";
                     isScanning = true;
                 } catch (err) {
-                    alert("無法啟動相機，請確認權限。");
+                    alert("無法啟動相機，請確認已授權瀏覽器使用相機。");
                     readerDiv.classList.add('hidden');
                 }
             } else {
@@ -227,9 +250,7 @@
             }
         }
 
-        // ==========================================
-        // 🌟 新增商品邏輯 (Modal)
-        // ==========================================
+        // --- D. 新增商品 (Modal) 邏輯 ---
         function openAddModal(scannedId) {
             document.getElementById('newProdId').value = scannedId;
             document.getElementById('newProdCategory').value = "";
@@ -255,13 +276,8 @@
             btn.innerText = "建立中...";
 
             const payload = {
-                action: "addProduct", // 告訴後端這是新增商品
-                product: {
-                    id: id,
-                    category: category,
-                    name: name,
-                    initialStock: initialStock
-                }
+                action: "addProduct",
+                product: { id: id, category: category, name: name, initialStock: initialStock }
             };
 
             try {
@@ -274,52 +290,50 @@
                 alert("🎉 商品建檔成功！");
                 closeAddModal();
                 
-                // 重新抓取最新商品庫
-                await fetchProducts();
+                // 將新商品加入前端暫存
+                productDatabase.push({ id: String(id), category: category, name: name });
+                renderProductSelect();
                 
-                // 自動將剛剛建檔的商品選取，方便繼續錄入數量
                 document.getElementById('productSelect').value = id;
+                document.getElementById('scanId').value = id;
+                
             } catch (e) {
-                alert("建立失敗，請檢查網路。");
+                alert("建立失敗，請檢查網路連線。");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "儲存並建立";
             }
         }
 
-        // ==========================================
-        // 原有購物車與提交邏輯
-        // ==========================================
+        // --- E. 購物車清單管理 ---
         function syncIdFromSelect() {
             document.getElementById('scanId').value = document.getElementById('productSelect').value;
         }
 
         function addCurrentItem() {
-            const id = document.getElementById('scanId').value;
+            const id = String(document.getElementById('scanId').value).trim();
             const qty = parseInt(document.getElementById('scanQty').value);
-            const select = document.getElementById('productSelect');
             
-            if (!id || isNaN(qty) || qty <= 0) return alert("請掃描或選擇商品！");
+            if (!id || isNaN(qty) || qty <= 0) return alert("請輸入正確的商品與數量！");
 
             let name = "未知商品";
-            if (select.selectedIndex > 0) {
-                name = select.options[select.selectedIndex].text.split(' (')[0];
+            const exists = findProductInDB(id);
+            
+            if (exists) {
+                name = exists.name;
             } else {
-                // 如果是手動輸入未知的 ID 點擊新增
-                const exists = productDatabase.find(p => p.id === id);
-                if (!exists) {
-                    if(confirm("此商品不在資料庫中，是否要建立新商品？")) {
-                        openAddModal(id);
-                    }
-                    return;
+                if(confirm("此商品不在資料庫中，是否要建立新商品？")) {
+                    openAddModal(id);
                 }
+                return;
             }
 
-            let existing = cart.find(i => i.id === id);
-            if (existing) {
-                existing.quantity += qty;
+            // 若清單中已有該項目則累加數量
+            let existingItem = cart.find(i => findProductInDB(i.id).id === exists.id);
+            if (existingItem) {
+                existingItem.quantity += qty;
             } else {
-                cart.push({ id: id, name: name, quantity: qty });
+                cart.push({ id: exists.id, name: name, quantity: qty });
             }
 
             document.getElementById('scanId').value = "";
@@ -336,32 +350,33 @@
                 return;
             }
             list.innerHTML = cart.map((item, index) => `
-                <li class="p-3 flex justify-between items-center text-sm">
+                <li class="p-3 flex justify-between items-center text-sm transition hover:bg-gray-100">
                     <div>
                         <div class="font-bold text-gray-800">${item.name}</div>
                         <div class="text-gray-500 text-xs">${item.id}</div>
                     </div>
                     <div class="flex items-center gap-4">
-                        <span class="font-bold text-blue-600">x${item.quantity}</span>
-                        <button onclick="cart.splice(${index}, 1); renderList();" class="text-red-400 p-1 font-bold text-lg">✕</button>
+                        <span class="font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">x${item.quantity}</span>
+                        <button onclick="cart.splice(${index}, 1); renderList();" class="text-red-400 p-1 font-bold text-lg active:text-red-600 hover:scale-110 transition">✕</button>
                     </div>
                 </li>
             `).join('');
         }
 
+        // --- F. 提交入出庫單 ---
         async function submitData() {
             const operator = document.getElementById('operator').value;
             const reason = document.getElementById('reason').value;
             
             if (!operator) return alert("請選擇操作人員！");
-            if (cart.length === 0) return alert("請至少加入一個品項！");
+            if (cart.length === 0) return alert("待提交清單不能為空！");
 
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.innerText = "資料傳送中...";
 
             const payload = {
-                action: "addTransaction", // 告訴後端這是新增交易紀錄
+                action: "addTransaction", 
                 orderId: "ORD-" + Date.now(),
                 operator: operator,
                 type: document.getElementById('type').value,
@@ -375,11 +390,11 @@
                     mode: 'no-cors', 
                     body: JSON.stringify(payload)
                 });
-                alert("✅ 入出庫單提交成功！");
+                alert("✅ 成功寫入雲端試算表！");
                 cart = []; 
                 renderList();
             } catch (e) {
-                alert("❌ 提交失敗，請檢查網路。");
+                alert("❌ 傳送失敗，請確認網路連線是否正常。");
             } finally {
                 btn.disabled = false;
                 btn.innerText = "確認提交至雲端";
