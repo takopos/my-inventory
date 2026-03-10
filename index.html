@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>進出庫管理系統</title>
+    <title>進出庫管理系統 v5 (相機優化版)</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -210,12 +210,25 @@
                 readerDiv.classList.remove('hidden');
                 html5QrCode = new Html5Qrcode("reader");
                 
-                // 恢復為較穩定的相機參數
-                const config = { fps: 10, qrbox: 250 }; 
+                // 🌟 優化 1：掃描器本體設定 (拉高 fps，寬扁掃描框)
+                const scannerConfig = { 
+                    fps: 15, 
+                    qrbox: { width: 250, height: 120 }, 
+                    aspectRatio: 1.0 
+                }; 
+
+                // 🌟 優化 2：向手機硬體請求最高解析度與連續對焦
+                const cameraConstraints = {
+                    facingMode: "environment",
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    advanced: [{ focusMode: "continuous" }] 
+                };
 
                 try {
                     await html5QrCode.start(
-                        { facingMode: "environment" }, config,
+                        cameraConstraints, 
+                        scannerConfig,
                         (decodedText) => {
                             playSuccessFeedback();
                             toggleScanner(); // 掃描成功後自動關閉相機
