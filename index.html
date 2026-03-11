@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>進出庫管理系統 v6 (穩定與流暢體驗版)</title>
+    <title>進出庫管理系統 v7 (極速解碼版)</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-4 pb-20 relative">
     <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 relative z-10">
-        <h2 class="text-2xl font-bold mb-4 text-center text-blue-600">📦 TAKO進出庫管理系統</h2>
+        <h2 class="text-2xl font-bold mb-4 text-center text-blue-600">📦 進出庫管理系統</h2>
         
         <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="col-span-2">
                 <label class="block text-sm font-medium text-gray-700">操作人員</label>
                 <select id="operator" class="w-full border p-2 rounded bg-white mt-1 focus:ring-2 focus:ring-blue-300">
                     <option value="">請選擇人員...</option>
-                    <option value="ABV閣樓府中">ABV閣樓府中</option>
-                    <option value="ABV韓式板橋文化">ABV韓式板橋文化</option>
-                    <option value="Web">Web</option>
+                    <option value="Robin">Robin</option>
                     <option value="William">William</option>
+                    <option value="Web">Web</option>
+                    <option value="ABV閣樓府中">ABV閣樓府中</option>
+                    <option value="ABV板橋文化韓式">ABV板橋文化韓式</option>
                 </select>
             </div>
             <div>
@@ -85,7 +86,7 @@
     </div>
 
     <div id="addProductModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 transform transition-all">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-sm p-6 transform transition-all">
             <h3 class="text-xl font-bold text-blue-600 mb-2">✨ 發現新商品</h3>
             <p class="text-xs text-gray-500 mb-4">此條碼不在資料庫中，請先建立基本資料：</p>
             
@@ -116,6 +117,7 @@
     </div>
 
     <script>
+        // 🔒 你的 Google Apps Script URL
         const API_URL = "https://script.google.com/macros/s/AKfycbz_9M9rlcqYuU-sECyEDmrB34VVbXnVW_IDAqYph6EiuG8cSWEo3iBXnb7t5hKzQ-66/exec";
         
         let cart = [];
@@ -153,7 +155,7 @@
                 renderProductSelect();
                 console.log("資料庫載入完成，共", productDatabase.length, "筆商品");
                 
-                // 🌟 修改點：資料載入成功後，解除按鈕封印並恢復藍色樣式
+                // 資料載入成功後，解除按鈕封印並恢復藍色樣式
                 scanBtn.disabled = false;
                 scanBtn.classList.remove('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
                 scanBtn.classList.add('bg-blue-100', 'text-blue-700', 'border-blue-300', 'active:bg-blue-200');
@@ -165,7 +167,7 @@
                 alert("⚠️ 無法連線至資料庫，請確認網路或 URL 設定。");
             }
         }
-        fetchProducts(); 
+        fetchProducts(); // 網頁載入時自動執行
 
         function renderProductSelect() {
             const select = document.getElementById('productSelect');
@@ -178,13 +180,14 @@
             });
         }
 
+        // 🌟 強化的商品比對函數，防呆防錯
         function findProductInDB(scannedId) {
             const target = String(scannedId).trim();
             return productDatabase.find(p => {
                 const dbId = String(p.id).trim();
-                if (dbId === target) return true; 
-                if (dbId.toUpperCase() === target.toUpperCase()) return true; 
-                if (dbId.replace(/^0+/, '') === target.replace(/^0+/, '')) return true; 
+                if (dbId === target) return true; // 完全相同
+                if (dbId.toUpperCase() === target.toUpperCase()) return true; // 忽略大小寫
+                if (dbId.replace(/^0+/, '') === target.replace(/^0+/, '')) return true; // 忽略開頭的 0
                 return false;
             });
         }
@@ -210,7 +213,7 @@
             const readerDiv = document.getElementById('reader');
             const btn = document.getElementById('scanBtn');
             
-            // 雙重保險防呆
+            // 雙重保險防呆：如果資料庫完全沒載入，先警告
             if (productDatabase.length === 0) {
                 alert("⚠️ 尚未讀取到商品清單，請稍候。");
                 return;
@@ -220,13 +223,25 @@
                 readerDiv.classList.remove('hidden');
                 html5QrCode = new Html5Qrcode("reader");
                 
+                // 🌟🌟🌟 【極速解碼終極設定】 🌟🌟🌟
                 const scannerConfig = { 
-                    fps: 15, 
-                    qrbox: { width: 250, height: 120 }, 
-                    aspectRatio: 1.0 
+                    fps: 30, // 💥 提高 FPS 到 30，反應更敏銳 (會稍微增加手機負荷)
+                    
+                    // 優化掃描框：針對 1D 條碼優化為更窄扁的長方形區域，專注抓取條碼，減少無效背景計算
+                    qrbox: { width: 260, height: 100 }, 
+                    aspectRatio: 1.0,
+
+                    // 💥 【加速最關鍵】限制識別格式：只識別常見的 1D 商品條碼，完全忽略 QR Code 的運算！
+                    // 這能節省大量的運算資源，大幅提升解碼速度。
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.CODE_128,
+                        Html5QrcodeSupportedFormats.CODE_39
+                    ]
                 }; 
 
-                // 🌟 終極穩定相機設定：只要求後置鏡頭，不做任何畫質強制要求，避免手機當機
+                // 🌟 【保持使用最穩定的鏡頭設定】避免再度發生「無法啟動相機」錯誤
                 const cameraConstraints = {
                     facingMode: "environment"
                 };
@@ -255,7 +270,8 @@
                     btn.innerText = "❌ 關閉相機";
                     isScanning = true;
                 } catch (err) {
-                    alert("無法啟動相機。請確認：\n1. 網址是 https 開頭\n2. 已允許瀏覽器相機權限\n3. 不要使用 LINE 內建瀏覽器開啟");
+                    // 將錯誤訊息調整得更詳細一些
+                    alert("無法啟動相機。請確認：\n1. 網址是 https 開頭\n2. 已允許瀏覽器相機權限\n3. 不要在 LINE 內建瀏覽器開啟\n\n如果手機發燙，請稍候再試。");
                     console.error("相機錯誤:", err);
                     readerDiv.classList.add('hidden');
                 }
@@ -310,6 +326,7 @@
                 alert("🎉 商品建檔成功！");
                 closeAddModal();
                 
+                // 將新商品加入前端暫存
                 productDatabase.push({ id: String(id), category: category, name: name });
                 renderProductSelect();
                 
@@ -347,6 +364,7 @@
                 return;
             }
 
+            // 若清單中已有該項目則累加數量
             let existingItem = cart.find(i => findProductInDB(i.id).id === exists.id);
             if (existingItem) {
                 existingItem.quantity += qty;
